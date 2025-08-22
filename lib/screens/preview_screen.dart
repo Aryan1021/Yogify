@@ -10,28 +10,49 @@ class PreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Use first image as header preview
+    final firstImageRef = session.sequence.first.script.first.imageRef;
+    final headerImage = "assets/images/${session.images[firstImageRef]}";
+
     return Scaffold(
       appBar: AppBar(title: Text("Preview: ${session.metadata['title']}")),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Session Header Card
+          // Hero Image + Session Header
           Card(
             elevation: 3,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(session.metadata['title'] ?? "Yoga Session",
-                      style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Text("Category: ${session.metadata['category']}",
-                      style: const TextStyle(fontSize: 16, color: Colors.grey)),
-                ],
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Hero(
+                  tag: "sessionThumb-$path", // ✅ Hero tag matches ListScreen
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                    child: Image.asset(
+                      headerImage,
+                      width: double.infinity,
+                      height: 180,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(session.metadata['title'] ?? "Yoga Session",
+                          style: const TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text("Category: ${session.metadata['category']}",
+                          style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 16),

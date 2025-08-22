@@ -37,7 +37,8 @@ class SessionListScreen extends StatelessWidget {
 
               // Use the first script's image as thumbnail
               final firstImageRef = session.sequence.first.script.first.imageRef;
-              final thumbnailPath = "assets/images/${session.images[firstImageRef]}";
+              final thumbnailPath =
+                  "assets/images/${session.images[firstImageRef]}";
 
               return Card(
                 elevation: 3,
@@ -48,13 +49,16 @@ class SessionListScreen extends StatelessWidget {
                 child: ListTile(
                   contentPadding:
                   const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(
-                      thumbnailPath,
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
+                  leading: Hero(
+                    tag: "sessionThumb-$path", // ✅ Unique Hero tag
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(
+                        thumbnailPath,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   title: Text(
@@ -71,8 +75,10 @@ class SessionListScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            PreviewScreen(session: session, path: path),
+                        builder: (_) => PreviewScreen(
+                          session: session,
+                          path: path,
+                        ),
                       ),
                     );
                   },
