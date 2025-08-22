@@ -16,35 +16,7 @@ Each yoga session is defined using a **JSON file** with metadata, scripts, audio
 
 ## 📂 Project Structure
 
-lib/
-│
-├── main.dart # Entry point
-│
-├── models/
-│ └── session.dart # Data models (YogaSession, Step, Script)
-│
-├── services/
-│ └── pose_service.dart # Loads and parses session JSON
-│
-├── screens/
-│ ├── session_list_screen.dart # List of all yoga sessions
-│ ├── preview_screen.dart # Preview screen with flow overview
-│ └── session_screen.dart # Actual session player with audio + images
-│
-assets/
-├── sessions/ # JSON session definitions
-│ ├── cat_cow.json
-│ └── sun_salutation.json
-│
-├── audio/ # Session audio files
-│ ├── pose1.mp3
-│ ├── pose2.mp3
-│ └── pose3.mp3
-│
-└── images/ # Pose images
-├── pose1.png
-├── pose2.png
-└── pose3.png
+<img width="330" height="841" alt="image" src="https://github.com/user-attachments/assets/319cff74-2006-4b30-8908-585b68e0ae20" />
 
 ---
 
