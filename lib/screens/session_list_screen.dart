@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/session.dart';
 import '../services/pose_service.dart';
-import 'session_screen.dart';
+import 'preview_screen.dart'; // ✅ new screen
 
 class SessionListScreen extends StatelessWidget {
   const SessionListScreen({super.key});
@@ -33,12 +33,13 @@ class SessionListScreen extends StatelessWidget {
               return ListTile(
                 title: Text(session.metadata["title"] ?? "Unknown"),
                 subtitle: Text(session.metadata["category"] ?? ""),
-                trailing: const Icon(Icons.play_arrow),
+                trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => SessionScreen(path: path),
+                      builder: (_) =>
+                          PreviewScreen(session: session, path: path), // ✅ open preview first
                     ),
                   );
                 },

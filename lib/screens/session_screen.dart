@@ -22,6 +22,7 @@ class _SessionScreenState extends State<SessionScreen> {
   int currentScriptIndex = 0;
   int elapsedSec = 0;
   bool _started = false;
+  bool _paused = false;
 
   @override
   void initState() {
@@ -61,6 +62,8 @@ class _SessionScreenState extends State<SessionScreen> {
 
     // Timer to control script + step transitions
     _tickTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_paused) return; // pause effect
+
       elapsedSec++;
 
       // Update script index
@@ -88,6 +91,32 @@ class _SessionScreenState extends State<SessionScreen> {
           _startStep(session, currentStepIndex);
         }
       }
+    });
+  }
+
+  void _pauseSession() {
+    setState(() {
+      _paused = true;
+    });
+    _audioPlayer.pause();
+  }
+
+  void _resumeSession(YogaSession session) {
+    setState(() {
+      _paused = false;
+    });
+    _audioPlayer.resume();
+  }
+
+  void _stopSession() {
+    _tickTimer?.cancel();
+    _audioPlayer.stop();
+    setState(() {
+      currentStepIndex = 0;
+      currentScriptIndex = 0;
+      elapsedSec = 0;
+      _started = false;
+      _paused = false;
     });
   }
 
@@ -136,22 +165,57 @@ class _SessionScreenState extends State<SessionScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
+
+                // Pose Image
                 Image.asset(
                   "assets/images/${session.images[script.imageRef]}",
                   height: 260,
                   fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 16),
+
+                // Script Text
                 Text(
                   script.text,
                   style: const TextStyle(fontSize: 18),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
+
+                // Progress bar
+                LinearProgressIndicator(
+                  value: elapsedSec / (step.durationSec > 0 ? step.durationSec : 1),
+                  backgroundColor: Colors.grey[300],
+                  color: Colors.blue,
+                  minHeight: 8,
+                ),
+                const SizedBox(height: 16),
+
+                // Timer text
                 Text(
                   "Step ${currentStepIndex + 1} of ${session.sequence.length}\n"
                       "(${elapsedSec}s / ${step.durationSec}s)",
                   textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+
+                // Play/Pause/Stop controls
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.play_arrow, size: 32),
+                      onPressed: () => _resumeSession(session),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.pause, size: 32),
+                      onPressed: _pauseSession,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.stop, size: 32),
+                      onPressed: _stopSession,
+                    ),
+                  ],
                 ),
               ],
             ),
