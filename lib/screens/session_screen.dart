@@ -13,9 +13,14 @@ class SessionScreen extends StatefulWidget {
 
 class _SessionScreenState extends State<SessionScreen> {
   late Future<YogaSession> sessionFuture;
+
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  Timer? _tickTimer;
+
   int currentStepIndex = 0;
-  AudioPlayer audioPlayer = AudioPlayer();
-  Timer? stepTimer;
+  int currentScriptIndex = 0;
+  int elapsedSec = 0; // seconds into current step
+  bool _started = false;
 
   @override
   void initState() {
@@ -25,33 +30,63 @@ class _SessionScreenState extends State<SessionScreen> {
 
   @override
   void dispose() {
-    audioPlayer.dispose();
-    stepTimer?.cancel();
+    _tickTimer?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
-  void _playStep(YogaSession session, int index) async {
-    if (index >= session.sequence.length) return;
+  void _startStep(YogaSession session, int stepIndex) async {
+    if (!mounted) return;
+    if (stepIndex >= session.sequence.length) return;
 
-    final step = session.sequence[index];
+    final step = session.sequence[stepIndex];
     final audioFile = session.audio[step.audioRef];
 
-    // Cancel any previous timers
-    stepTimer?.cancel();
+    // Reset tracking
+    setState(() {
+      elapsedSec = 0;
+      currentScriptIndex = 0;
+    });
 
-    // Play audio
+    // Stop audio if any
+    await _audioPlayer.stop();
+
+    // Start audio if available
     if (audioFile != null) {
-      await audioPlayer.stop();
-      await audioPlayer.play(AssetSource("audio/$audioFile"));
+      await _audioPlayer.play(AssetSource("audio/$audioFile"));
     }
 
-    // Move to next step after duration
-    stepTimer = Timer(Duration(seconds: step.durationSec), () {
-      if (mounted) {
-        setState(() {
-          currentStepIndex++;
-        });
-        _playStep(session, currentStepIndex);
+    // Cancel previous timer
+    _tickTimer?.cancel();
+
+    // Start a 1-second ticker to drive script & step transitions
+    _tickTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      elapsedSec++;
+
+      // Update script index
+      for (int i = 0; i < step.script.length; i++) {
+        if (elapsedSec >= step.script[i].startSec &&
+            elapsedSec < step.script[i].endSec) {
+          if (i != currentScriptIndex) {
+            setState(() {
+              currentScriptIndex = i;
+            });
+          }
+          break;
+        }
+      }
+
+      // End step after durationSec
+      if (elapsedSec >= step.durationSec) {
+        timer.cancel();
+        _audioPlayer.stop();
+        if (mounted) {
+          setState(() {
+            currentStepIndex++;
+            currentScriptIndex = 0;
+          });
+          _startStep(session, currentStepIndex);
+        }
       }
     });
   }
@@ -65,18 +100,20 @@ class _SessionScreenState extends State<SessionScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
+          }
+          if (snapshot.hasError) {
             return Center(child: Text("Error: ${snapshot.error}"));
-          } else if (!snapshot.hasData) {
+          }
+          if (!snapshot.hasData) {
             return const Center(child: Text("No session data found"));
           }
 
           final session = snapshot.data!;
 
-          // Start first step automatically
-          if (currentStepIndex < session.sequence.length) {
+          if (!_started) {
+            _started = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _playStep(session, currentStepIndex);
+              _startStep(session, currentStepIndex);
             });
           }
 
@@ -84,38 +121,40 @@ class _SessionScreenState extends State<SessionScreen> {
             return const Center(child: Text("Session Completed ✅"));
           }
 
-          final currentStep = session.sequence[currentStepIndex];
+          final step = session.sequence[currentStepIndex];
+          final script = step.script[currentScriptIndex];
 
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                currentStep.name,
-                style:
-                const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-
-              // Show first script image + text for this step
-              if (currentStep.script.isNotEmpty) ...[
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  step.name,
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
                 Image.asset(
-                  "assets/images/${session.images[currentStep.script[0].imageRef]}",
-                  height: 250,
+                  "assets/images/${session.images[script.imageRef]}",
+                  height: 260,
                   fit: BoxFit.contain,
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    currentStep.script[0].text,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 18),
-                  ),
+                const SizedBox(height: 16),
+                Text(
+                  script.text,
+                  style: const TextStyle(fontSize: 18),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  "Step ${currentStepIndex + 1} of ${session.sequence.length}\n"
+                      "(${elapsedSec}s / ${step.durationSec}s)",
+                  textAlign: TextAlign.center,
                 ),
               ],
-
-              const SizedBox(height: 20),
-              Text("Step ${currentStepIndex + 1} of ${session.sequence.length}"),
-            ],
+            ),
           );
         },
       ),
