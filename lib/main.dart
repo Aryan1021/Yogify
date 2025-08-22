@@ -13,7 +13,21 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Yogify',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(
+        primarySwatch: Colors.teal, // ✅ calming teal palette
+        scaffoldBackgroundColor: Colors.grey[100], // soft background
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.teal,
+          foregroundColor: Colors.white,
+          elevation: 2,
+        ),
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(
+            fontSize: 16,
+            color: Colors.black87,
+          ),
+        ),
+      ),
       home: const SessionListScreen(),
     );
   }

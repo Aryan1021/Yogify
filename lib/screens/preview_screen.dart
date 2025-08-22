@@ -15,30 +15,79 @@ class PreviewScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text("Category: ${session.metadata['category']}",
-              style: const TextStyle(fontSize: 18)),
-          const Divider(),
-          ...session.sequence.expand((step) => step.script).map(
-                (script) => ListTile(
-              leading: Image.asset(
-                "assets/images/${session.images[script.imageRef]}",
-                width: 50,
+          // Session Header Card
+          Card(
+            elevation: 3,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(session.metadata['title'] ?? "Yoga Session",
+                      style: const TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text("Category: ${session.metadata['category']}",
+                      style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                ],
               ),
-              title: Text(script.text),
             ),
           ),
-          const SizedBox(height: 20),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.play_arrow),
-            label: const Text("Start Session"),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => SessionScreen(path: path),
+          const SizedBox(height: 16),
+
+          // Sequence Steps
+          const Text(
+            "Session Flow",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          ...session.sequence.expand((step) => step.script).map(
+                (script) => Card(
+              elevation: 2,
+              margin: const EdgeInsets.symmetric(vertical: 6),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              child: ListTile(
+                leading: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    "assets/images/${session.images[script.imageRef]}",
+                    width: 50,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              );
-            },
+                title: Text(
+                  script.text,
+                  style: const TextStyle(fontSize: 15),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Start Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: const Icon(Icons.play_arrow, size: 28),
+              label: const Text("Start Session", style: TextStyle(fontSize: 18)),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SessionScreen(path: path),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

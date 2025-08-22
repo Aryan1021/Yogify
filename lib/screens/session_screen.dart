@@ -166,28 +166,43 @@ class _SessionScreenState extends State<SessionScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Pose Image
-                Image.asset(
-                  "assets/images/${session.images[script.imageRef]}",
-                  height: 260,
-                  fit: BoxFit.contain,
+                // Pose Image with smooth transition
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 500),
+                  child: Image.asset(
+                    "assets/images/${session.images[script.imageRef]}",
+                    key: ValueKey(script.imageRef),
+                    height: 260,
+                    fit: BoxFit.contain,
+                  ),
                 ),
                 const SizedBox(height: 16),
 
-                // Script Text
-                Text(
-                  script.text,
-                  style: const TextStyle(fontSize: 18),
-                  textAlign: TextAlign.center,
+                // Script Text with smooth transition
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 500),
+                  child: Text(
+                    script.text,
+                    key: ValueKey(script.text),
+                    style: const TextStyle(fontSize: 18),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 const SizedBox(height: 24),
 
-                // Progress bar
-                LinearProgressIndicator(
-                  value: elapsedSec / (step.durationSec > 0 ? step.durationSec : 1),
-                  backgroundColor: Colors.grey[300],
-                  color: Colors.blue,
-                  minHeight: 8,
+                // Animated Progress bar
+                TweenAnimationBuilder<double>(
+                  tween: Tween(
+                      begin: 0,
+                      end: elapsedSec /
+                          (step.durationSec > 0 ? step.durationSec : 1)),
+                  duration: const Duration(milliseconds: 500),
+                  builder: (context, value, _) => LinearProgressIndicator(
+                    value: value,
+                    backgroundColor: Colors.grey[300],
+                    color: Colors.teal,
+                    minHeight: 8,
+                  ),
                 ),
                 const SizedBox(height: 16),
 
