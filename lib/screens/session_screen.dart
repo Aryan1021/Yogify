@@ -5,7 +5,8 @@ import '../models/session.dart';
 import '../services/pose_service.dart';
 
 class SessionScreen extends StatefulWidget {
-  const SessionScreen({super.key});
+  final String path; // ✅ Accepts JSON path dynamically
+  const SessionScreen({super.key, required this.path});
 
   @override
   State<SessionScreen> createState() => _SessionScreenState();
@@ -19,13 +20,14 @@ class _SessionScreenState extends State<SessionScreen> {
 
   int currentStepIndex = 0;
   int currentScriptIndex = 0;
-  int elapsedSec = 0; // seconds into current step
+  int elapsedSec = 0;
   bool _started = false;
 
   @override
   void initState() {
     super.initState();
-    sessionFuture = PoseService().loadSession();
+    // ✅ Load session dynamically from given path
+    sessionFuture = PoseService().loadSession(widget.path);
   }
 
   @override
@@ -48,18 +50,16 @@ class _SessionScreenState extends State<SessionScreen> {
       currentScriptIndex = 0;
     });
 
-    // Stop audio if any
     await _audioPlayer.stop();
 
-    // Start audio if available
+    // Play audio if available
     if (audioFile != null) {
       await _audioPlayer.play(AssetSource("audio/$audioFile"));
     }
 
-    // Cancel previous timer
     _tickTimer?.cancel();
 
-    // Start a 1-second ticker to drive script & step transitions
+    // Timer to control script + step transitions
     _tickTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       elapsedSec++;
 
@@ -76,7 +76,7 @@ class _SessionScreenState extends State<SessionScreen> {
         }
       }
 
-      // End step after durationSec
+      // End step after duration
       if (elapsedSec >= step.durationSec) {
         timer.cancel();
         _audioPlayer.stop();
