@@ -20,6 +20,12 @@ Each yoga session is defined using a **JSON file** with metadata, scripts, audio
 
 ---
 
+## 📱 APK 
+
+- **Download the APK**: [Download Yogify APK](https://github.com/user-attachments/files/22052322/app-release.zip)
+
+---
+
 ## 🚀 Getting Started
 
 ### 1️⃣ Clone the repo
